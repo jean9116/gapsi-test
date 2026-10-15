@@ -8,7 +8,7 @@ definición** y **distinta configuración**.
 | Entregable | Dónde |
 |---|---|
 | Terraform | [`terraform/`](terraform/): `bootstrap` (una vez), `platform` (por ambiente) y 9 módulos propios |
-| Diagrama | Interactivos: [`arquitectura.html`](docs/diagramas/arquitectura.html) y [`cicd.html`](docs/diagramas/cicd.html) (fuente JSON al lado); versión Mermaid en [Arquitectura](#arquitectura) y [CI/CD](#cicd) |
+| Diagrama | Imágenes en [Arquitectura](#arquitectura) y [CI/CD](#cicd); interactivos en [arquitectura](https://jean9116.github.io/gapsi-test/docs/diagramas/arquitectura.html) y [CI/CD](https://jean9116.github.io/gapsi-test/docs/diagramas/cicd.html) (fuente JSON en `docs/diagramas/`) |
 | Presupuesto años 1–3 | [`docs/presupuesto/`](docs/presupuesto/README.md), con el cálculo reproducible en `calcular.py` |
 | Decisiones técnicas | [`docs/adr/`](docs/adr/), un ADR por decisión con alternativas y consecuencias |
 | CI/CD | [`cicd/`](cicd/) (Cloud Build) y triggers en [`terraform/bootstrap/cicd.tf`](terraform/bootstrap/cicd.tf) |
@@ -37,7 +37,9 @@ definición** y **distinta configuración**.
 
 ## Arquitectura
 
-Diagrama interactivo para el equipo (abrir en el navegador; zoom, búsqueda y exportación a PNG/SVG): [`docs/diagramas/arquitectura.html`](docs/diagramas/arquitectura.html).
+![Arquitectura de la plataforma de proveedores en GCP](docs/diagramas/arquitectura.png)
+
+Versión interactiva (zoom, búsqueda, exportación): [https://jean9116.github.io/gapsi-test/docs/diagramas/arquitectura.html](https://jean9116.github.io/gapsi-test/docs/diagramas/arquitectura.html). Debajo, la misma vista en Mermaid.
 
 ```mermaid
 flowchart LR
@@ -519,7 +521,11 @@ La infraestructura es reproducible desde el repositorio:
 ## CI/CD
 
 Todo corre en **Cloud Build** del proyecto shared, con triggers declarados en Terraform
-([`bootstrap/cicd.tf`](terraform/bootstrap/cicd.tf)) y sin credenciales fuera de GCP. Diagrama interactivo: [`docs/diagramas/cicd.html`](docs/diagramas/cicd.html).
+([`bootstrap/cicd.tf`](terraform/bootstrap/cicd.tf)) y sin credenciales fuera de GCP.
+
+![Flujo de CI/CD con Cloud Build](docs/diagramas/cicd.png)
+
+Versión interactiva: [https://jean9116.github.io/gapsi-test/docs/diagramas/cicd.html](https://jean9116.github.io/gapsi-test/docs/diagramas/cicd.html).
 
 ```mermaid
 flowchart LR
