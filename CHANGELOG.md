@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [Sin publicar]
 
+## [0.2.2] - 2026-10-14
+
+### Cambiado
+- `GET /api/db` devuelve solo el nombre de la service account, sin el dominio del proyecto.
+
 ## [0.2.1] - 2026-10-14
 
 ### Corregido

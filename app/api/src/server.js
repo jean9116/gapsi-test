@@ -26,7 +26,7 @@ const routes = {
   // Comprueba la BD (IP privada + usuario IAM) y devuelve los últimos pedidos que guardó el worker.
   "GET /api/db": async () => {
     const pool = await getPool();
-    const { rows: [info] } = await pool.query("select current_user as usuario, version() as version, now() as ahora");
+    const { rows: [info] } = await pool.query("select split_part(current_user, '@', 1) as usuario, version() as version, now() as ahora");
     const { rows: [{ total }] } = await pool.query("select count(*)::int as total from pedidos");
     const { rows: ultimos } = await pool.query("select id, creado, datos from pedidos order by creado desc limit 5");
     return [200, { ...info, pedidos: total, ultimos }];
