@@ -188,3 +188,18 @@ variable "files_force_destroy" {
   type        = bool
   default     = false
 }
+
+# ---------- Proyecto existente (PoC) ----------
+# Por diseño cada ambiente tiene su propio proyecto creado por bootstrap. Para una prueba en un
+# proyecto que ya existe y lo comparten otras cargas, estas dos opciones evitan pisarlas.
+variable "service_account_prefix" {
+  description = "Prefijo de las service accounts. En un proyecto compartido usar <app>-<env>."
+  type        = string
+  default     = "sa"
+}
+
+variable "manage_default_log_bucket" {
+  description = "Fija la retención del bucket _Default del proyecto. false en un proyecto compartido."
+  type        = bool
+  default     = true
+}

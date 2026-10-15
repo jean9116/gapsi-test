@@ -9,9 +9,15 @@ TF       := terraform
 PLATFORM := terraform/platform
 BOOT     := terraform/bootstrap
 VARS     := -var-file=../environments/common.tfvars -var-file=../environments/$(ENV)/terraform.tfvars
+# Opcional y no versionado: desplegar el ambiente en un proyecto existente (ver README, «Proyecto existente»).
+LOCAL_TFVARS  := terraform/environments/$(ENV)/local.tfvars
+LOCAL_BACKEND := terraform/environments/$(ENV)/local.backend.hcl
+VARS     += $(if $(wildcard $(LOCAL_TFVARS)),-var-file=../environments/$(ENV)/local.tfvars)
+BACKEND  := ../environments/$(ENV)/$(if $(wildcard $(LOCAL_BACKEND)),local.backend.hcl,backend.hcl)
 
 # gcloud y las credenciales de Terraform (ADC) de este proyecto, aisladas del resto de cuentas.
 export CLOUDSDK_CONFIG ?= $(CURDIR)/.gcloud
+export GOOGLE_APPLICATION_CREDENTIALS ?= $(CLOUDSDK_CONFIG)/application_default_credentials.json
 export TF_PLUGIN_CACHE_DIR ?= $(HOME)/.terraform.d/plugin-cache
 
 .PHONY: help check-env suffix bootstrap-init bootstrap-plan bootstrap-apply bootstrap-migrate \
@@ -22,7 +28,7 @@ help: ## Esta ayuda
 
 check-env:
 	@[[ " $(ENVS) " == *" $(ENV) "* ]] || { echo "ENV debe ser uno de: $(ENVS)"; exit 1; }
-	@! grep -rq SUFIJO terraform/environments/$(ENV) || { echo "Falta el sufijo: make suffix S=xxxx"; exit 1; }
+	@[[ -f $(LOCAL_TFVARS) ]] || ! grep -rq SUFIJO terraform/environments/$(ENV) || { echo "Falta el sufijo: make suffix S=xxxx"; exit 1; }
 
 suffix: ## Fija el sufijo de los IDs de proyecto en tfvars, backends y pipelines (S=xxxx)
 	@[[ "$(S)" =~ ^[a-z0-9]{4,6}$$ ]] || { echo "Uso: make suffix S=<4-6 caracteres a-z0-9>"; exit 1; }
@@ -47,7 +53,7 @@ bootstrap-migrate: ## Mueve el estado de bootstrap al bucket GCS creado
 
 # ---------- plataforma por ambiente ----------
 init: check-env ## terraform init del ambiente (ENV=dev|qa|prod)
-	cd $(PLATFORM) && $(TF) init -reconfigure -backend-config=../environments/$(ENV)/backend.hcl
+	cd $(PLATFORM) && $(TF) init -reconfigure -backend-config=$(BACKEND)
 
 plan: init ## Plan del ambiente
 	cd $(PLATFORM) && $(TF) plan -out=tfplan-$(ENV) $(VARS)

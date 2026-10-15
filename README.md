@@ -268,6 +268,38 @@ Notas del primer despliegue:
   printf '%s' "$VALOR" | gcloud secrets versions add pprov-dev-erp-api-key --data-file=- --project=pprov-dev-<sufijo>
   ```
 
+### Proyecto existente (prueba sin bootstrap)
+
+Para probar un ambiente en un proyecto GCP que ya existe (sin crear proyectos ni facturación),
+el Makefile lee dos ficheros opcionales por ambiente, ignorados por git:
+
+```hcl
+# terraform/environments/dev/local.backend.hcl
+bucket = "<bucket-de-estado>"
+prefix = "platform/dev"
+
+# terraform/environments/dev/local.tfvars  (se aplica después de terraform.tfvars)
+project_id                = "<proyecto-existente>"
+deployer_service_account  = null
+service_account_prefix    = "pprov-dev"   # SAs con prefijo propio, sin chocar con las del proyecto
+manage_default_log_bucket = false         # no tocar la retención de logs del proyecto
+```
+
+Lo que el bootstrap haría y aquí se crea a mano, una vez:
+
+```bash
+gcloud storage buckets create gs://<bucket-de-estado> --location=us-central1 \
+  --uniform-bucket-level-access --public-access-prevention
+gcloud storage buckets update gs://<bucket-de-estado> --versioning
+gcloud artifacts repositories create pprov-docker --repository-format=docker --location=us-central1
+```
+
+Después, el flujo es el normal: `make plan ENV=dev && make apply ENV=dev` y el despliegue de
+imágenes con `cicd/scripts/deploy.sh`. Todo lo que crea lleva el prefijo `pprov-dev-` (incluida
+una VPC propia), las APIs se activan con `disable_on_destroy = false` y el IAM es aditivo, así que
+`make destroy ENV=dev` no afecta a lo que ya había en el proyecto. El bucket de estado y el
+repositorio se borran a mano al final.
+
 En el día a día, los cambios no se aplican a mano: van por PR y el pipeline (ver [CI/CD](#cicd)).
 
 ---
@@ -301,6 +333,8 @@ Variables de `terraform/platform` (definidas en [`variables.tf`](terraform/platf
 | `deployer_service_account` | string | `null` | SA del pipeline que despliega en este ambiente |
 | `deletion_protection` | bool | — | Protección contra borrado de BD, servicios y jobs |
 | `files_force_destroy` | bool | `false` | Permite borrar el bucket de archivos con contenido |
+| `service_account_prefix` | string | `"sa"` | Prefijo de los IDs de service account (útil para convivir con otras SAs en un proyecto existente) |
+| `manage_default_log_bucket` | bool | `true` | Gestiona la retención del bucket `_Default`; `false` en un proyecto compartido |
 
 Variables de `terraform/bootstrap`: `app_name`, `suffix`, `billing_account` (sensible),
 `org_id`/`folder_id`, `region`, `environments` (con el presupuesto mensual de cada uno),

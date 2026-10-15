@@ -38,3 +38,12 @@ dist/
 
 # Evidencia local de archify visual-check (se regenera)
 docs/diagramas/*.visual-check.*
+
+# Entorno local del workspace (direnv y Claude Code)
+.envrc
+.claude/settings.local.json
+# Despliegue en un proyecto existente: datos de la cuenta, no se publican
+terraform/environments/*/local.tfvars
+terraform/environments/*/local.backend.hcl
+kube.yaml
+.docker/

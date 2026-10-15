@@ -5,8 +5,8 @@ resource "google_service_account" "this" {
   for_each = var.service_accounts
 
   project      = var.project_id
-  account_id   = "sa-${each.key}"
-  display_name = "sa-${each.key}"
+  account_id   = "${var.prefix}-${each.key}"
+  display_name = "${var.prefix}-${each.key}"
   description  = each.value.description
 }
 

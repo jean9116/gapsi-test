@@ -20,7 +20,10 @@ locals {
 }
 
 # Retención de logs del proyecto (más de 30 días tiene coste por GiB-mes).
+# Desactivable al desplegar en un proyecto compartido: el bucket _Default es de todo el proyecto.
 resource "google_logging_project_bucket_config" "default" {
+  count = var.manage_default_log_bucket ? 1 : 0
+
   project        = var.project_id
   location       = "global"
   bucket_id      = "_Default"

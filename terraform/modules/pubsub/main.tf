@@ -126,8 +126,8 @@ resource "google_service_account" "external" {
   for_each = var.external_apps
 
   project      = var.project_id
-  account_id   = "sa-ext-${each.key}"
-  display_name = "sa-ext-${each.key}"
+  account_id   = "${var.sa_prefix}-ext-${each.key}"
+  display_name = "${var.sa_prefix}-ext-${each.key}"
   description  = "Integración externa ${each.key}: publica y consume solo en sus topics."
 }
 

@@ -3,9 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node src/server.js",
     "migrate": "node src/migrate.js"
+  },
+  "dependencies": {
+    "@google-cloud/cloud-sql-connector": "1.12.1",
+    "pg": "8.23.1"
   }
 }

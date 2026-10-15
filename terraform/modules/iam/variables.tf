@@ -10,3 +10,9 @@ variable "service_accounts" {
     project_roles = list(string)
   }))
 }
+
+variable "prefix" {
+  description = "Prefijo de los account_id (sa-<componente> en un proyecto propio del ambiente)."
+  type        = string
+  default     = "sa"
+}

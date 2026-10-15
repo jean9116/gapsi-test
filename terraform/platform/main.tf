@@ -3,6 +3,7 @@ module "iam" {
   source = "../modules/iam"
 
   project_id       = var.project_id
+  prefix           = var.service_account_prefix
   service_accounts = local.service_accounts
 
   depends_on = [google_project_service.this]
@@ -221,6 +222,7 @@ module "pubsub" {
   worker_url         = module.worker.uri
   push_invoker_email = module.iam.emails["pubsub-push"]
   external_apps      = var.external_apps
+  sa_prefix          = var.service_account_prefix
   publishers         = { for k in ["api", "worker", "batch"] : k => module.iam.members[k] }
   labels             = local.labels
 
@@ -300,17 +302,18 @@ module "edge" {
 module "observability" {
   source = "../modules/observability"
 
-  project_id          = var.project_id
-  name                = local.name
-  notification_emails = var.notification_emails
-  log_retention_days  = var.log_retention_days
-  latency_p95_ms      = var.latency_p95_ms
-  run_services        = [module.frontend.name, module.api.name, module.worker.name]
-  run_jobs            = concat([for j in module.jobs : j.name], [module.migrate.name])
-  sql_database_id     = "${var.project_id}:${module.database.instance_name}"
-  dlq_subscriptions   = values(module.pubsub.dlq_subscription_names)
-  work_subscriptions  = [for k, v in var.topics : "${local.name}-${k}-worker" if v.push_path != null]
-  uptime_host         = module.edge.domain
+  project_id                = var.project_id
+  name                      = local.name
+  notification_emails       = var.notification_emails
+  log_retention_days        = var.log_retention_days
+  manage_default_log_bucket = var.manage_default_log_bucket
+  latency_p95_ms            = var.latency_p95_ms
+  run_services              = [module.frontend.name, module.api.name, module.worker.name]
+  run_jobs                  = concat([for j in module.jobs : j.name], [module.migrate.name])
+  sql_database_id           = "${var.project_id}:${module.database.instance_name}"
+  dlq_subscriptions         = values(module.pubsub.dlq_subscription_names)
+  work_subscriptions        = [for k, v in var.topics : "${local.name}-${k}-worker" if v.push_path != null]
+  uptime_host               = module.edge.domain
 
   depends_on = [google_project_service.this]
 }

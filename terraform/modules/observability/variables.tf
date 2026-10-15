@@ -19,6 +19,12 @@ variable "log_retention_days" {
   default     = 30
 }
 
+variable "manage_default_log_bucket" {
+  description = "Gestiona la retención del bucket _Default (false en un proyecto compartido con otras cargas)."
+  type        = bool
+  default     = true
+}
+
 variable "run_services" {
   description = "Servicios Cloud Run a vigilar."
   type        = list(string)

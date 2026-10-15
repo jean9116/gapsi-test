@@ -69,3 +69,9 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "sa_prefix" {
+  description = "Prefijo de las service accounts de las aplicaciones externas."
+  type        = string
+  default     = "sa"
+}

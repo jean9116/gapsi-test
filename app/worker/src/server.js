@@ -3,11 +3,18 @@
 // intentos, mande el mensaje a la DLQ. Los handlers deben ser idempotentes (entrega al menos una vez).
 import http from "node:http";
 import { log } from "./log.js";
+import { getPool } from "./db.js";
 
 const port = Number(process.env.PORT ?? 8080);
 
 const handlers = {
-  "/events/pedidos": async (data) => log("INFO", "pedido recibido", { id: data.id }),
+  // Idempotente: el id del pedido es la clave, una reentrega no duplica la fila.
+  "/events/pedidos": async (data) => {
+    if (!data.id) throw new Error("pedido sin id");
+    const pool = await getPool();
+    const r = await pool.query("insert into pedidos (id, datos) values ($1, $2) on conflict (id) do nothing", [data.id, data]);
+    log("INFO", "pedido guardado", { id: data.id, nuevo: r.rowCount === 1 });
+  },
   "/events/entregas": async (data) => log("INFO", "entrega recibida", { id: data.id }),
   "/events/integraciones": async (data) => log("INFO", "integración recibida", { origen: data.origen }),
 };

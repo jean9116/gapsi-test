@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-10-14
+
+### Añadido
+- Modo «proyecto existente»: `local.tfvars` y `local.backend.hcl` opcionales por ambiente,
+  variables `service_account_prefix` y `manage_default_log_bucket`.
+- Aplicación de ejemplo con datos reales: la API lee Cloud SQL por IP privada con IAM
+  (`GET /api/db`) y publica pedidos en Pub/Sub (`POST /api/pedidos`); el worker los guarda de
+  forma idempotente; la migración crea la tabla `pedidos` y sus permisos.
+- README: sección «Proyecto existente (prueba sin bootstrap)».
+
 ## [0.1.0] - 2026-10-14
 
 ### Añadido
