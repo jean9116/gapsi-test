@@ -1,0 +1,60 @@
+# Merge a main con cambios en app/: build de las 4 imágenes (tag = SHA corto, inmutable),
+# escaneo, push y despliegue en dev. La misma imagen se promueve después a qa y prod.
+substitutions:
+  _REGISTRY: us-central1-docker.pkg.dev/pprov-shared-SUFIJO/pprov-docker
+  _PROJECT: pprov-dev-SUFIJO
+  _ENV: dev
+  _REGION: us-central1
+  _TRIVY_IMAGE: aquasec/trivy:0.75.0
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  # Máquina por defecto (e2-standard-2): entra en los 2.500 min/mes gratuitos.
+
+steps:
+  # ---------- build en paralelo ----------
+  - id: build-frontend
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    args: ["build", "-t", "${_REGISTRY}/frontend:${SHORT_SHA}", "--label", "org.opencontainers.image.revision=${COMMIT_SHA}", "app/frontend"]
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    args: ["build", "-t", "${_REGISTRY}/api:${SHORT_SHA}", "--label", "org.opencontainers.image.revision=${COMMIT_SHA}", "app/api"]
+  - id: build-worker
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    args: ["build", "-t", "${_REGISTRY}/worker:${SHORT_SHA}", "--label", "org.opencontainers.image.revision=${COMMIT_SHA}", "app/worker"]
+  - id: build-batch
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["-"]
+    args: ["build", "-t", "${_REGISTRY}/batch:${SHORT_SHA}", "--label", "org.opencontainers.image.revision=${COMMIT_SHA}", "app/batch"]
+
+  # ---------- escaneo: corta el pipeline con vulnerabilidades CRITICAL corregibles ----------
+  # Cloud Build monta el socket de Docker en cada paso: Trivy ve las imágenes recién construidas.
+  - id: scan
+    name: ${_TRIVY_IMAGE}
+    waitFor: ["build-frontend", "build-api", "build-worker", "build-batch"]
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        for c in frontend api worker batch; do
+          trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed --no-progress \
+            --docker-host unix:///var/run/docker.sock ${_REGISTRY}/$$c:${SHORT_SHA} || exit 1
+        done
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    waitFor: ["scan"]
+    entrypoint: bash
+    args: ["-c", "for c in frontend api worker batch; do docker push ${_REGISTRY}/$$c:${SHORT_SHA} || exit 1; done"]
+
+  # ---------- despliegue en dev: migraciones, servicios, jobs y smoke test ----------
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: ["push"]
+    entrypoint: bash
+    args: ["cicd/scripts/deploy.sh", "${_PROJECT}", "${_REGION}", "${_ENV}", "${_REGISTRY}", "${SHORT_SHA}"]
+
+timeout: 2400s

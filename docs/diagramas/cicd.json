@@ -1,0 +1,288 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "CI/CD con Cloud Build",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "GitHub"
+        },
+        "backend": {
+          "label": "Build"
+        },
+        "security": {
+          "label": "Gate / control"
+        },
+        "messagebus": {
+          "label": "Recuperación"
+        },
+        "database": {
+          "label": "Registro"
+        },
+        "cloud": {
+          "label": "Despliegue"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "git",
+      "label": "GitHub · desarrollador"
+    },
+    {
+      "id": "cb",
+      "label": "Cloud Build · Terraform y aplicación"
+    },
+    {
+      "id": "lower",
+      "label": "Cloud Run · dev → qa → prod"
+    },
+    {
+      "id": "fail",
+      "label": "Fallo y rollback",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "change",
+      "label": "Cambio",
+      "fromCol": 0,
+      "toCol": 0
+    },
+    {
+      "id": "verify",
+      "label": "Build + gates",
+      "fromCol": 1,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "deliver",
+      "label": "Entrega por digest",
+      "fromCol": 3,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "pr",
+    "merge",
+    "build",
+    "trivy",
+    "push",
+    "deploy_dev",
+    "promote_qa",
+    "promote_prod"
+  ],
+  "nodes": [
+    {
+      "id": "pr",
+      "lane": "git",
+      "col": 0,
+      "type": "frontend",
+      "label": "Pull Request",
+      "sublabel": "rama → main",
+      "brand": "github",
+      "width": 150
+    },
+    {
+      "id": "merge",
+      "lane": "git",
+      "col": 1,
+      "type": "frontend",
+      "label": "Merge a main",
+      "sublabel": "revisado",
+      "brand": "github",
+      "width": 150
+    },
+    {
+      "id": "tf_plan",
+      "lane": "cb",
+      "col": 0,
+      "type": "security",
+      "label": "pprov-tf-plan",
+      "sublabel": "fmt · tflint · checkov · test",
+      "brand": "terraform",
+      "width": 150
+    },
+    {
+      "id": "tf_apply",
+      "lane": "cb",
+      "col": 5,
+      "type": "cloud",
+      "label": "pprov-tf-apply",
+      "sublabel": "dev auto · qa/prod aprobación",
+      "brand": "terraform",
+      "width": 150
+    },
+    {
+      "id": "build",
+      "lane": "cb",
+      "col": 1,
+      "type": "backend",
+      "label": "pprov-app-build",
+      "sublabel": "4 imágenes · tag SHA",
+      "brand": "google-cloud",
+      "width": 150
+    },
+    {
+      "id": "trivy",
+      "lane": "cb",
+      "col": 2,
+      "type": "security",
+      "label": "Trivy",
+      "sublabel": "CRITICAL bloquea",
+      "width": 150
+    },
+    {
+      "id": "push",
+      "lane": "cb",
+      "col": 3,
+      "type": "database",
+      "label": "Artifact Registry",
+      "sublabel": "push de imágenes",
+      "brand": "google-cloud",
+      "width": 150
+    },
+    {
+      "id": "deploy_dev",
+      "lane": "lower",
+      "col": 3,
+      "type": "cloud",
+      "label": "Deploy dev",
+      "sublabel": "migrate · servicios · smoke",
+      "width": 150
+    },
+    {
+      "id": "promote_qa",
+      "lane": "lower",
+      "col": 4,
+      "type": "cloud",
+      "label": "Promote qa",
+      "sublabel": "manual · mismo digest",
+      "width": 150
+    },
+    {
+      "id": "promote_prod",
+      "lane": "lower",
+      "col": 5,
+      "type": "cloud",
+      "label": "Promote prod",
+      "sublabel": "manual + aprobación",
+      "tag": "gate humano",
+      "width": 150
+    },
+    {
+      "id": "stopped",
+      "lane": "fail",
+      "col": 2,
+      "type": "security",
+      "label": "Build detenido",
+      "sublabel": "nada se publica",
+      "width": 150
+    },
+    {
+      "id": "rollback",
+      "lane": "fail",
+      "col": 3,
+      "type": "messagebus",
+      "label": "Rollback",
+      "sublabel": "revisión anterior 100 %",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "from": "pr",
+      "to": "merge"
+    },
+    {
+      "from": "pr",
+      "to": "tf_plan",
+      "label": "plan ×3",
+      "role": "branch"
+    },
+    {
+      "from": "merge",
+      "to": "tf_apply",
+      "label": "terraform/**",
+      "role": "branch"
+    },
+    {
+      "from": "merge",
+      "to": "build",
+      "label": "app/**",
+      "variant": "emphasis"
+    },
+    {
+      "from": "build",
+      "to": "trivy",
+      "label": "escanea"
+    },
+    {
+      "from": "trivy",
+      "to": "push",
+      "label": "limpio",
+      "variant": "emphasis"
+    },
+    {
+      "from": "push",
+      "to": "deploy_dev",
+      "label": "digest",
+      "variant": "emphasis"
+    },
+    {
+      "from": "deploy_dev",
+      "to": "promote_qa"
+    },
+    {
+      "from": "promote_qa",
+      "to": "promote_prod",
+      "variant": "security"
+    },
+    {
+      "from": "trivy",
+      "to": "stopped",
+      "label": "CVE",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "from": "deploy_dev",
+      "to": "rollback",
+      "label": "smoke falla",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Gates",
+      "items": [
+        "PR: fmt, tflint, checkov, terraform test y plan de los 3 ambientes",
+        "Build: Trivy corta con CVE CRITICAL"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Promoción",
+      "items": [
+        "qa y prod despliegan el mismo digest probado en dev",
+        "Terraform y app en prod exigen aprobación"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Recuperación",
+      "items": [
+        "Migraciones antes de mover tráfico",
+        "Smoke fallido: tráfico a la revisión anterior en cualquier ambiente"
+      ]
+    }
+  ]
+}

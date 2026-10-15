@@ -1,0 +1,65 @@
+ambiente,servicio,concepto,tipo,usd_mes_año1,usd_mes_año2,usd_mes_año3
+dev,Cloud SQL,db-g1-small zonal,fijo,25.55,25.55,25.55
+dev,Cloud SQL,SSD 10 GiB,variable,1.70,2.21,2.87
+dev,Cloud SQL,backups ~5 GiB,variable,0.40,0.52,0.68
+dev,Cloud Run,"tiempo activo (150 ms/petición, concurrencia efectiva 20)",variable,0.12,0.16,0.20
+dev,Cloud Run,peticiones,variable,0.32,0.42,0.54
+dev,Cloud Run Jobs,conciliación diaria 10 min + reportes semanal 30 min,variable,0.53,0.69,0.90
+dev,Load Balancer,2 reglas de reenvío,fijo,18.25,18.25,18.25
+dev,Load Balancer,datos procesados ~8 GiB,variable,0.06,0.08,0.10
+dev,Cloud CDN,salida ~2 GiB + llenado + consultas,variable,0.31,0.40,0.52
+dev,Internet egress,respuestas de API ~5 GiB,variable,0.60,0.78,1.01
+dev,Cloud Armor,política + 7 reglas,fijo,12.00,12.00,12.00
+dev,Cloud Armor,peticiones evaluadas,variable,0.41,0.53,0.69
+dev,Cloud NAT,IP + pasarela (instancias medias conectadas),fijo,4.67,4.67,4.67
+dev,Cloud NAT,datos ~1 GiB,variable,0.04,0.05,0.07
+dev,Pub/Sub,~0 GiB de mensajes,variable,0.01,0.01,0.02
+dev,Cloud Storage,5 GiB Standard + operaciones,variable,0.14,0.18,0.24
+dev,Secret Manager,3 secretos activos,fijo,0.18,0.18,0.18
+dev,Cloud Monitoring,14 condiciones de alerta,fijo,4.90,4.90,4.90
+dev,Cloud Scheduler,2 jobs programados,fijo,0.20,0.20,0.20
+dev,Cloud Logging,ingesta y retención,variable,0.00,0.00,0.00
+qa,Cloud SQL,1 vCPU / 3.75 GiB zonal,fijo,49.31,49.31,49.31
+qa,Cloud SQL,SSD 20 GiB,variable,3.40,4.42,5.75
+qa,Cloud SQL,backups ~15 GiB,variable,1.20,1.56,2.03
+qa,Cloud Run,"tiempo activo (150 ms/petición, concurrencia efectiva 20)",variable,0.48,0.62,0.81
+qa,Cloud Run,peticiones,variable,1.16,1.51,1.96
+qa,Cloud Run Jobs,conciliación diaria 10 min + reportes semanal 30 min,variable,0.53,0.69,0.90
+qa,Load Balancer,2 reglas de reenvío,fijo,18.25,18.25,18.25
+qa,Load Balancer,datos procesados ~34 GiB,variable,0.27,0.35,0.46
+qa,Cloud CDN,salida ~10 GiB + llenado + consultas,variable,1.18,1.53,1.99
+qa,Internet egress,respuestas de API ~20 GiB,variable,2.40,3.12,4.06
+qa,Cloud Armor,política + 7 reglas,fijo,12.00,12.00,12.00
+qa,Cloud Armor,peticiones evaluadas,variable,1.58,2.05,2.67
+qa,Cloud NAT,IP + pasarela (instancias medias conectadas),fijo,4.67,4.67,4.67
+qa,Cloud NAT,datos ~2 GiB,variable,0.09,0.12,0.15
+qa,Pub/Sub,~1 GiB de mensajes,variable,0.06,0.08,0.10
+qa,Cloud Storage,20 GiB Standard + operaciones,variable,0.54,0.70,0.91
+qa,Secret Manager,3 secretos activos,fijo,0.18,0.18,0.18
+qa,Cloud Monitoring,14 condiciones de alerta,fijo,4.90,4.90,4.90
+qa,Cloud Scheduler,2 jobs programados,fijo,0.20,0.20,0.20
+qa,Cloud Logging,ingesta y retención,variable,0.00,0.00,0.00
+prod,Cloud SQL,2 vCPU / 8 GiB HA regional,fijo,202.36,202.36,202.36
+prod,Cloud SQL,SSD 50 GiB (×2 HA),variable,17.00,22.10,28.73
+prod,Cloud SQL,backups ~50 GiB,variable,4.00,5.20,6.76
+prod,Cloud Run,"instancias mínimas (frontend 1, api 2, worker 1)",fijo,49.28,49.28,49.28
+prod,Cloud Run,"tiempo activo (150 ms/petición, concurrencia efectiva 20)",variable,3.83,4.98,6.47
+prod,Cloud Run,peticiones,variable,9.20,11.96,15.55
+prod,Cloud Run Jobs,conciliación diaria 10 min + reportes semanal 30 min,variable,0.53,0.69,0.90
+prod,Load Balancer,2 reglas de reenvío,fijo,18.25,18.25,18.25
+prod,Load Balancer,datos procesados ~473 GiB,variable,3.78,4.91,6.39
+prod,Cloud CDN,salida ~300 GiB + llenado + consultas,variable,27.90,36.27,47.15
+prod,Internet egress,respuestas de API ~145 GiB,variable,17.40,22.62,29.41
+prod,Cloud Armor,política + 7 reglas,fijo,12.00,12.00,12.00
+prod,Cloud Armor,peticiones evaluadas,variable,12.00,15.60,20.28
+prod,Cloud NAT,IP + pasarela (instancias medias conectadas),fijo,8.76,8.76,8.76
+prod,Cloud NAT,datos ~10 GiB,variable,0.45,0.59,0.76
+prod,Pub/Sub,~11 GiB de mensajes,variable,0.44,0.57,0.74
+prod,Cloud Storage,100 GiB Standard + operaciones,variable,3.05,3.96,5.15
+prod,Secret Manager,3 secretos activos,fijo,0.18,0.18,0.18
+prod,Cloud Monitoring,14 condiciones de alerta,fijo,4.90,4.90,4.90
+prod,Cloud Scheduler,2 jobs programados,fijo,0.20,0.20,0.20
+prod,Cloud Logging,ingesta y retención,variable,0.84,3.39,11.91
+shared,Artifact Registry,"~3 GiB de imágenes (0,5 GiB gratis)",variable,0.25,0.33,0.42
+shared,Cloud Build,"~1.300 min/mes, dentro de los 2.500 gratis",variable,0.00,0.00,0.00
+shared,Cloud Storage,estado de Terraform,fijo,0.01,0.01,0.01

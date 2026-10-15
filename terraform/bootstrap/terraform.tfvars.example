@@ -1,0 +1,5 @@
+# Copiar a terraform.tfvars (no se versiona) y completar.
+suffix          = "7k2x"
+billing_account = "XXXXXX-XXXXXX-XXXXXX"
+# org_id        = "123456789012"   # solo si la cuenta tiene organización
+# github_repository = "projects/pprov-shared-7k2x/locations/us-central1/connections/github/repositories/gapsi-test"

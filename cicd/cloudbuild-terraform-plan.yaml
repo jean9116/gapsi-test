@@ -1,0 +1,64 @@
+# PR a main: calidad del código Terraform y plan de los tres ambientes (solo lectura).
+# Trigger: pprov-tf-plan (terraform/bootstrap/cicd.tf). SA: sa-tf-plan.
+substitutions:
+  _TF_IMAGE: hashicorp/terraform:1.16.6
+  _TFLINT_IMAGE: ghcr.io/terraform-linters/tflint:v0.64.0
+  _CHECKOV_IMAGE: bridgecrew/checkov:3.3.29
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  env:
+    - TF_IN_AUTOMATION=1
+    - TF_INPUT=0
+    - TF_PLUGIN_CACHE_DIR=/workspace/.terraform.d/plugin-cache
+
+steps:
+  - id: fmt
+    name: ${_TF_IMAGE}
+    entrypoint: sh
+    args: ["-c", "mkdir -p $$TF_PLUGIN_CACHE_DIR && terraform fmt -check -recursive -diff terraform"]
+
+  - id: tflint
+    name: ${_TFLINT_IMAGE}
+    waitFor: ["fmt"]
+    entrypoint: sh
+    args: ["-c", "tflint --init --config=$$PWD/.tflint.hcl && tflint --recursive --config=$$PWD/.tflint.hcl --chdir=terraform"]
+
+  - id: checkov
+    name: ${_CHECKOV_IMAGE}
+    waitFor: ["fmt"]
+    args: ["--config-file", ".checkov.yaml", "-d", "terraform"]
+
+  - id: test
+    name: ${_TF_IMAGE}
+    waitFor: ["fmt"]
+    dir: terraform/platform
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        terraform init -backend=false
+        for env in dev qa prod; do
+          terraform test -var-file=../environments/common.tfvars -var-file=../environments/$$env/terraform.tfvars || exit 1
+        done
+
+  - id: plan
+    name: ${_TF_IMAGE}
+    waitFor: ["tflint", "checkov", "test"]
+    dir: terraform/platform
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -e
+        for env in dev qa prod; do
+          echo "================ plan $$env ================"
+          rm -rf .terraform/terraform.tfstate
+          terraform init -reconfigure -backend-config=../environments/$$env/backend.hcl
+          # -lock=false: el plan de una PR no debe bloquear un apply en curso.
+          terraform plan -lock=false -no-color \
+            -var-file=../environments/common.tfvars \
+            -var-file=../environments/$$env/terraform.tfvars | tee /workspace/plan-$$env.txt
+        done
+
+timeout: 1800s

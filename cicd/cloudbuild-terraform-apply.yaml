@@ -1,0 +1,33 @@
+# Merge a main: plan + apply de un ambiente (_ENV). Un trigger por ambiente, cada uno con
+# su SA (sa-tf-<env>) limitada a su proyecto. qa y prod esperan aprobación manual.
+substitutions:
+  _TF_IMAGE: hashicorp/terraform:1.16.6
+  _ENV: dev
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  env:
+    - TF_IN_AUTOMATION=1
+    - TF_INPUT=0
+
+steps:
+  - id: init
+    name: ${_TF_IMAGE}
+    dir: terraform/platform
+    args: ["init", "-backend-config=../environments/${_ENV}/backend.hcl"]
+
+  - id: plan
+    name: ${_TF_IMAGE}
+    dir: terraform/platform
+    args:
+      - plan
+      - -out=tfplan
+      - -var-file=../environments/common.tfvars
+      - -var-file=../environments/${_ENV}/terraform.tfvars
+
+  - id: apply
+    name: ${_TF_IMAGE}
+    dir: terraform/platform
+    args: ["apply", "tfplan"]
+
+timeout: 3600s

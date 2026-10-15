@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Plataforma de proveedores en GCP",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1360,
+      620
+    ]
+  },
+  "components": [
+    {
+      "id": "cicd",
+      "type": "cloud",
+      "label": "Cloud Build",
+      "sublabel": "→ Artifact Registry",
+      "brand": "google-cloud",
+      "pos": [
+        30,
+        120
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Usuarios",
+      "sublabel": "2.000 concurrentes",
+      "pos": [
+        30,
+        290
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "lb",
+      "type": "security",
+      "label": "Load Balancer",
+      "sublabel": "Cloud Armor + CDN",
+      "brand": "google-cloud",
+      "pos": [
+        250,
+        290
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Cloud Run frontend",
+      "sublabel": "React en nginx",
+      "brand": "react",
+      "pos": [
+        480,
+        120
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Cloud Run api",
+      "sublabel": "Node.js 24",
+      "brand": "node-js",
+      "pos": [
+        480,
+        290
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "pubsub",
+      "type": "messagebus",
+      "label": "Pub/Sub",
+      "sublabel": "topics + DLQ",
+      "brand": "google-cloud",
+      "pos": [
+        730,
+        290
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Cloud Run worker",
+      "sublabel": "ingress interno",
+      "brand": "node-js",
+      "pos": [
+        980,
+        290
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "erp",
+      "type": "external",
+      "label": "Apps externas",
+      "sublabel": "ERP, SA propia",
+      "pos": [
+        1196,
+        120
+      ],
+      "size": [
+        140,
+        68
+      ]
+    },
+    {
+      "id": "gcs",
+      "type": "database",
+      "label": "Cloud Storage",
+      "sublabel": "archivos versionados",
+      "brand": "google-cloud",
+      "pos": [
+        250,
+        480
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "Cloud SQL",
+      "sublabel": "PostgreSQL 18 HA",
+      "brand": "postgresql",
+      "pos": [
+        480,
+        480
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "jobs",
+      "type": "backend",
+      "label": "Cloud Run Jobs",
+      "sublabel": "batch + migrate",
+      "brand": "google-cloud",
+      "pos": [
+        730,
+        480
+      ],
+      "size": [
+        156,
+        68
+      ]
+    },
+    {
+      "id": "scheduler",
+      "type": "cloud",
+      "label": "Cloud Scheduler",
+      "sublabel": "cron por job",
+      "brand": "google-cloud",
+      "pos": [
+        980,
+        480
+      ],
+      "size": [
+        156,
+        68
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "pprov-shared-<sufijo>",
+      "wraps": [
+        "cicd"
+      ],
+      "pad": 22
+    },
+    {
+      "kind": "region",
+      "label": "pprov-<env>-<sufijo> · dev / qa / prod",
+      "wraps": [
+        "lb",
+        "frontend",
+        "api",
+        "pubsub",
+        "worker",
+        "gcs",
+        "sql",
+        "jobs",
+        "scheduler"
+      ],
+      "pad": 34
+    },
+    {
+      "kind": "security-group",
+      "label": "VPC · solo IP privada",
+      "wraps": [
+        "sql"
+      ],
+      "pad": 30
+    }
+  ],
+  "connections": [
+    {
+      "id": "users-lb",
+      "from": "users",
+      "to": "lb",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "lb-api",
+      "from": "lb",
+      "to": "api",
+      "label": "/api/*",
+      "variant": "emphasis"
+    },
+    {
+      "id": "lb-frontend",
+      "from": "lb",
+      "to": "frontend",
+      "label": "/* vía CDN",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "api-pubsub",
+      "from": "api",
+      "to": "pubsub",
+      "label": "publica"
+    },
+    {
+      "id": "pubsub-worker",
+      "from": "pubsub",
+      "to": "worker",
+      "label": "push OIDC"
+    },
+    {
+      "id": "erp-pubsub",
+      "from": "erp",
+      "to": "pubsub",
+      "label": "publica / pull",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "api-gcs",
+      "from": "api",
+      "to": "gcs",
+      "label": "URLs firmadas",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "api-sql",
+      "from": "api",
+      "to": "sql",
+      "label": "Connector + IAM",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 34
+    },
+    {
+      "id": "worker-sql",
+      "from": "worker",
+      "to": "sql",
+      "label": "IAM",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "jobs-sql",
+      "from": "jobs",
+      "to": "sql",
+      "label": "SQL",
+      "variant": "security",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "scheduler-jobs",
+      "from": "scheduler",
+      "to": "jobs",
+      "label": "OAuth",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "cicd-frontend",
+      "from": "cicd",
+      "to": "frontend",
+      "label": "deploy por digest",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Seguridad",
+      "items": [
+        "Una SA por componente, sin claves JSON",
+        "Secret Manager: valores write-only fuera del estado",
+        "Cloud Armor: WAF, 429 por IP, defensa L7"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Red",
+      "items": [
+        "VPC propia + Private Service Access",
+        "Direct VPC egress y Cloud NAT de salida",
+        "Firewall: deny all ingress"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Observabilidad",
+      "items": [
+        "Logging, Monitoring, Error Reporting, Trace",
+        "14 alertas y uptime desde 3 regiones"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "HA en prod",
+      "items": [
+        "Cloud SQL regional, failover ~60 s",
+        "PITR 7 días y 30 backups en multirregión us",
+        "Rollback automático del pipeline"
+      ]
+    }
+  ]
+}

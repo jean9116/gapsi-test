@@ -1,0 +1,20 @@
+# Promoción manual de una versión ya desplegada y probada en el ambiente anterior.
+# No se reconstruye nada: se despliega el mismo digest que pasó por dev (y qa).
+# Uso: gcloud builds triggers run pprov-app-promote-qa --region=us-central1 --substitutions=_TAG=<sha-corto>
+substitutions:
+  _REGISTRY: us-central1-docker.pkg.dev/pprov-shared-SUFIJO/pprov-docker
+  _PROJECT: pprov-qa-SUFIJO
+  _ENV: qa
+  _REGION: us-central1
+  _TAG: ""
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args: ["cicd/scripts/deploy.sh", "${_PROJECT}", "${_REGION}", "${_ENV}", "${_REGISTRY}", "${_TAG}"]
+
+timeout: 1800s

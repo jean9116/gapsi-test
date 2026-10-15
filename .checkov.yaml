@@ -1,0 +1,30 @@
+# Configuración de checkov (pre-commit y pipeline de PR).
+# Cada check omitido tiene su motivo; revisarlos si cambian los requisitos de cumplimiento.
+framework:
+  - terraform
+compact: true
+quiet: true
+skip-check:
+  # Cifrado con claves propias (CMEK/CSEK). Se usa el cifrado por defecto de Google (AES-256).
+  # CMEK añade Cloud KMS (~0,06 $/clave/mes + operaciones) y la gestión de rotación y acceso;
+  # se activaría si el cumplimiento (PCI, etc.) lo exige. Ver docs/adr.
+  - CKV_GCP_83   # Pub/Sub topics con CSEK
+  - CKV_GCP_84   # Artifact Registry con CSEK
+  # Cloud SQL: el acceso solo es por el conector (connector_enforcement = REQUIRED, mTLS) y
+  # ssl_mode = ENCRYPTED_ONLY; el check solo reconoce TRUSTED_CLIENT_CERTIFICATE_REQUIRED.
+  - CKV_GCP_6
+  # Registro de todas las sentencias, duraciones y hostnames: mucho volumen de logs (coste)
+  # y riesgo de datos personales en logs. Se registran consultas lentas (> 1 s), esperas de
+  # bloqueo, ficheros temporales, conexiones y desconexiones, y Query Insights.
+  - CKV_GCP_57   # log_min_duration_statement = -1
+  - CKV_GCP_108  # log_hostname
+  - CKV_GCP_109  # log_min_messages
+  - CKV_GCP_110  # pgAudit
+  - CKV_GCP_111  # log_statement
+  - CKV2_GCP_13  # log_duration
+  # Data Access audit logs en todos los servicios: coste de ingesta alto. Admin Activity está
+  # siempre activo y gratis; Data Access se activaría por servicio si se necesita.
+  - CKV2_GCP_5
+  # Bucket del tfstate: versionado, acceso uniforme, sin acceso público y escritura limitada
+  # por prefijo a las SAs de CI. Los cambios de IAM quedan en Admin Activity.
+  - CKV_GCP_62

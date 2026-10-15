@@ -1,0 +1,40 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# Variables locales con datos de la cuenta (billing, correos). Los tfvars de ambientes SÍ se versionan.
+*.auto.tfvars
+terraform/bootstrap/terraform.tfvars
+
+# Credenciales y configuración local de gcloud
+.gcloud/
+*.json.key
+*-key.json
+credentials*.json
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+
+# Editor / SO
+.idea/
+.vscode/
+.DS_Store
+
+# Identidad git local de este repo (includeIf en ~/.gitconfig)
+.gitconfig-gapsi
+
+# Evidencia local de archify visual-check (se regenera)
+docs/diagramas/*.visual-check.*
