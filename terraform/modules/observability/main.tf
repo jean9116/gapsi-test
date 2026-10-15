@@ -117,7 +117,7 @@ resource "google_monitoring_alert_policy" "app_errors" {
   conditions {
     display_name = "severity >= ERROR > 10/min"
     condition_threshold {
-      filter          = "resource.type = (\"cloud_run_revision\" OR \"cloud_run_job\") AND metric.type = \"logging.googleapis.com/user/${google_logging_metric.app_errors.name}\""
+      filter          = "resource.type = one_of(\"cloud_run_revision\", \"cloud_run_job\") AND metric.type = \"logging.googleapis.com/user/${google_logging_metric.app_errors.name}\""
       comparison      = "COMPARISON_GT"
       threshold_value = 10
       duration        = "300s"

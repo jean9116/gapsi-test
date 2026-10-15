@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [Sin publicar]
 
+## [0.2.1] - 2026-10-14
+
+### Corregido
+- Alerta de errores de aplicación: el filtro de Monitoring usa `one_of(...)` (la sintaxis
+  `("a" OR "b")` solo vale en Logging y la API la rechazaba).
+
 ## [0.2.0] - 2026-10-14
 
 ### Añadido
